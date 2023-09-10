@@ -32,6 +32,80 @@ const style = {
     p: 4,
 };
 
+function deleteTransaction(transaction_id) {
+  axios.post('https://mkhalil.pythonanywhere.com/delete_transaction', {
+      transaction_id: transaction_id
+    })
+}
+
+function DeleteTransactionModal(props){
+  return (
+    <Modal
+    open={props.modalOpen}
+    onClose={props.handleClose}
+    aria-labelledby="modal-modal-title"
+    aria-describedby="modal-modal-description"
+    >
+      <Box sx={style}>
+        <Stack spacing={2}>
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+            Are you sure you want to delete transaction?
+            </Typography>
+            <TextField 
+                id="outlined-basic" 
+                label="Merchant" 
+                variant="outlined" 
+                InputProps={{
+                  readOnly: true,
+                }}
+                defaultValue={props.transaction.merchant}
+                onChange={(event) => {
+                  props.transaction.merchant = event.target.value;
+                  }}
+            />
+            <TextField 
+                id="outlined-basic" 
+                label="Amount" 
+                type="number" 
+                InputProps={{
+                  readOnly: true,
+                }}
+                variant="outlined" 
+                defaultValue={props.transaction.amount} 
+                onChange={(event) => {
+                    props.transaction.amount = event.target.value
+                  }}
+            />
+            <TextField 
+                id="outlined-basic" 
+                label="Category" 
+                variant="outlined" 
+                InputProps={{
+                  readOnly: true,
+                }}
+                defaultValue={props.transaction.category} 
+                onChange={(event) => {
+                    props.transaction.category = event.target.value
+                  }}
+            />
+            <Stack direction="row" spacing={2}>
+                <Button onClick={()=>{
+                    deleteTransaction(props.transaction.id);
+                    props.handleClose();
+                    setTimeout(function(){
+                        props.reloadTransactions();
+                    }, 1000);
+                }}>
+                    DELETE
+                </Button>
+                <Button onClick={()=>props.handleClose()}>CANCEL</Button>
+            </Stack>
+        </Stack>
+      </Box>
+    </Modal>
+);
+}
+
 function updateTransaction(transaction_id, merchant, amount, category) {
     axios.post('https://mkhalil.pythonanywhere.com/update_transaction', {
         id: transaction_id, merchant: merchant, amount: amount, category: category
@@ -113,6 +187,8 @@ function Row(props){
     const [open, setOpen] = React.useState(false);
     const [modalOpen, setModalOpen] = React.useState(false);
     const handleClose = () => setModalOpen(false);
+    const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
+    const handleDeleteModalClose = () => setDeleteModalOpen(false);
     const[selectedTransaction, setSelectedTransaction] = React.useState({})
 
     return (
@@ -144,6 +220,7 @@ function Row(props){
                         <TableCell>Amount</TableCell>
                         <TableCell align="left">Date</TableCell>
                         <TableCell align="left"></TableCell>
+                        <TableCell align="left"></TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -163,6 +240,18 @@ function Row(props){
                                     EDIT
                                 </Button>
                                 <EditTransactionModal transaction={selectedTransaction} reloadTransactions={props.reloadTransactions} modalOpen={modalOpen} handleClose={handleClose}/>
+                            </TableCell>
+                            <TableCell align="left">
+                                <Button
+                                    variant="contained"
+                                    onClick={() => {
+                                        setSelectedTransaction(row);
+                                        setDeleteModalOpen(true);
+                                    }}
+                                >
+                                    DELETE
+                                </Button>
+                                <DeleteTransactionModal transaction={selectedTransaction} reloadTransactions={props.reloadTransactions} modalOpen={deleteModalOpen} handleClose={handleDeleteModalClose}/>
                             </TableCell>
                         </TableRow>
                       ))}
