@@ -270,7 +270,7 @@ function Row(props){
 export default function MonthTable(props) {
     return (
         <div>
-        <Typography variant="h2" gutterBottom>
+        <Typography variant="h4" gutterBottom>
         Month Spending: ${props.monthTotal}
         </Typography>
         <TableContainer component={Paper}>
