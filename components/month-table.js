@@ -40,16 +40,14 @@ function updateTransaction(transaction_id, merchant, amount, category) {
 
 function EditTransactionModal(props){
     const [categories, setCategories] = useState([]);
+    let fetchCategories = React.useCallback(async () => {
+        const response = await axios.get("https://mkhalil.pythonanywhere.com/get_categories");
+        setCategories(response.data["categories"]);
+      },[])
+
     useEffect(() => {
-        fetch('/get_categories')
-        .then(response => response.json())
-        .then(data => {
-            setCategories(data);
-        })
-        .catch(error => {
-        // Handle the error
-        });
-      }, [])
+        fetchCategories();
+      }, [fetchCategories])
     return (
         <Modal
         open={props.modalOpen}
@@ -97,6 +95,7 @@ function EditTransactionModal(props){
                         props.handleClose();
                         setTimeout(function(){
                             props.reloadTransactions();
+                            fetchCategories();
                         }, 1000);
                     }}>
                         UPDATE
