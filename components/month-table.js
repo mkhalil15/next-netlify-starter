@@ -38,6 +38,96 @@ function deleteTransaction(transaction_id) {
     })
 }
 
+function addTransaction(merchant, date, amount, category) {
+  axios.post('https://mkhalil.pythonanywhere.com/add_transaction', {
+      merchant: merchant, amount: amount, date: date, category: category
+    })
+}
+
+function AddTransactionModal(props){
+  const [date, setDate] = useState("");
+  const [merchant, setMerchant] = useState("");
+  const [amount, setAmount] = useState(0);
+  const [category, setCategory] = useState("");
+
+  const [categories, setCategories] = useState([]);
+
+  let fetchCategories = React.useCallback(async () => {
+      const response = await axios.get("https://mkhalil.pythonanywhere.com/get_categories");
+      setCategories(response.data["categories"]);
+    },[])
+
+  useEffect(() => {
+      fetchCategories();
+    }, [fetchCategories])
+  return (
+    <Modal
+    open={props.modalOpen}
+    onClose={props.handleClose}
+    aria-labelledby="modal-modal-title"
+    aria-describedby="modal-modal-description"
+    >
+      <Box sx={style}>
+        <Stack spacing={2}>
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+            Are you sure you want to delete transaction?
+            </Typography>
+            <TextField 
+                id="outlined-basic" 
+                label="Merchant" 
+                variant="outlined" 
+                defaultValue={merchant}
+                onChange={(event) => {
+                  setMerchant(event.target.value);
+                  }}
+            />
+            <TextField 
+                id="outlined-basic" 
+                label="Amount" 
+                type="number" 
+                variant="outlined" 
+                defaultValue={amount} 
+                onChange={(event) => {
+                    setAmount(parseFloat(event.target.value));
+                  }}
+            />
+            <TextField 
+                id="outlined-basic" 
+                label="Date" 
+                variant="outlined" 
+                defaultValue={date} 
+                onChange={(event) => {
+                    setDate(event.target.value);
+                  }}
+            />
+            <Autocomplete
+                freeSolo={true}
+                id="combo-box-demo"
+                options={categories}
+                renderInput={(params) => <TextField {...params} label="Category"/>}
+                defaultValue={category}
+                onInputChange={(event, newValue) => {
+                  setCategory(newValue);
+                  }}
+            />
+            <Stack direction="row" spacing={2}>
+                <Button onClick={()=>{
+                    addTransaction(merchant, date, amount, category);
+                    props.handleClose();
+                    setTimeout(function(){
+                        props.reloadTransactions();
+                    }, 1000);
+                }}>
+                    ADD
+                </Button>
+                <Button onClick={()=>props.handleClose()}>CANCEL</Button>
+            </Stack>
+        </Stack>
+      </Box>
+    </Modal>
+);
+}
+
 function DeleteTransactionModal(props){
   return (
     <Modal
@@ -268,6 +358,9 @@ function Row(props){
 
 
 export default function MonthTable(props) {
+  const [open, setOpen] = React.useState(false);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const handleClose = () => setModalOpen(false);
     return (
         <div>
         <Typography variant="h4" gutterBottom>
@@ -277,7 +370,17 @@ export default function MonthTable(props) {
           <Table aria-label="collapsible table">
             <TableHead>
               <TableRow>
-                <TableCell></TableCell>
+                <TableCell>
+                <Button
+                    variant="contained"
+                    onClick={() => {
+                        setModalOpen(true);
+                    }}
+                >
+                    ADD TRANSACTION
+                </Button>
+                <AddTransactionModal reloadTransactions={props.reloadTransactions} modalOpen={modalOpen} handleClose={handleClose}/>
+                </TableCell>
                 <TableCell align="left">Category</TableCell>
                 <TableCell align="left">Total</TableCell>
               </TableRow>
