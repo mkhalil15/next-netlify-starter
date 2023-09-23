@@ -17,8 +17,6 @@ export default function Home() {
   }, [fetchMonthTransactions])
 
   return (
-    <div className="container">
       <MonthTable monthTransactions={monthTransactions} monthTotal={monthTotal} reloadTransactions={fetchMonthTransactions}/>
-    </div>
   )
 }
